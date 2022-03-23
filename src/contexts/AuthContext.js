@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
-import apiClient from "../utils/axios";
+// import apiClient from "../utils/axios";
+import { apiClient } from "../utils/axios";
 
 const defaultValues = {
   user: null,
@@ -14,11 +15,10 @@ const defaultValues = {
   isLoading: false,
   setIsLoading: () => null,
   isAuthenticated: false,
+  createUserSession: () => null
 };
 
-const AuthContext = createContext(defaultValues);
-
-export const useAuth = () => useContext(AuthContext);
+export const AuthContext = createContext(defaultValues);
 
 function AuthProvider({ children }) {
   const router = useRouter();
@@ -27,9 +27,28 @@ function AuthProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const isAuthenticated = !!user;
 
+  // const apiClient = apiClientPrivate();
+
   useEffect(() => {
     refreshTokens();
   }, []);
+
+  const createUserSession = (user, accessToken, redirectUrl) => {
+    user && setUser(user);
+    if (accessToken) {
+      setAccessToken(accessToken);
+      const bearer = `Bearer ${accessToken}`;
+      apiClient.defaults.headers.Authorization = bearer;
+    }
+    console.log("createUserSession = ", accessToken);
+    redirectUrl && router.push(redirectUrl);
+  };
+
+  const clearUserSession = () => {
+    setAccessToken("");
+    setUser(null);
+    setIsLoading(false);
+  };
 
   const refreshTokens = async () => {
     try {
@@ -37,13 +56,16 @@ function AuthProvider({ children }) {
       const { user, accessToken } = response.data;
 
       if (user && accessToken) {
-        setAccessToken(accessToken);
-        setUser(user);
-        const bearer = `Bearer ${accessToken}`;
-        apiClient.defaults.headers.Authorization = bearer;
+        createUserSession(user, accessToken);
+
+        // setAccessToken(accessToken);
+        // setUser(user);
+        // const bearer = `Bearer ${accessToken}`;
+        // apiClient.defaults.headers.Authorization = bearer;
       }
     } catch (err) {
-      console.error(err);
+      console.error("refresh token error = ", err);
+      // router.push('/login')
     }
   };
 
@@ -52,8 +74,11 @@ function AuthProvider({ children }) {
     const { user, accessToken } = response.data;
 
     if (user && accessToken) {
-      setAccessToken(accessToken);
-      setUser(user);
+      createUserSession(user, accessToken, "/surveys");
+      // setAccessToken(accessToken);
+      // setUser(user);
+      // apiClient.defaults.headers.Authorization = `Bearer ${accessToken}`;
+      // router.push("/surveys");
     }
   };
 
@@ -62,33 +87,33 @@ function AuthProvider({ children }) {
     const { user, accessToken } = response.data;
 
     if (user && accessToken) {
-      setAccessToken(accessToken);
-      setUser(user);
-      apiClient.defaults.headers.Authorization = `Bearer ${accessToken}`;
-      router.push("/surveys");
+      createUserSession(user, accessToken, "/surveys");
+      // setAccessToken(accessToken);
+      // setUser(user);
+      // apiClient.defaults.headers.Authorization = `Bearer ${accessToken}`;
+      // router.push("/surveys");
     }
   };
 
-	const resetPassword = async (password, token) => {
-		const response = await apiClient.post(
-			`auth/reset-password?token=${token}`,
-			{
-				password,
-			}
-		);
-		const { user, accessToken } = response.data;
+  const resetPassword = async (password, token) => {
+    const response = await apiClient.post(
+      `auth/reset-password?token=${token}`,
+      {
+        password,
+      }
+    );
+    // const { user, accessToken } = response.data;
 
-		if (user && accessToken) {
-			setAccessToken(accessToken);
-			setUser(user);
-			router.push("/");
-		}
-	};
+    // if (user && accessToken) {
+    // 	setAccessToken(accessToken);
+    // 	setUser(user);
+    router.push("/login?flash=Password reset successfull. Please Login.");
+    // }
+  };
 
   const logout = async () => {
     await apiClient.post("/auth/logout");
-    setAccessToken("");
-    setUser(null);
+    clearUserSession();
     router.push("/login");
   };
 
@@ -103,6 +128,7 @@ function AuthProvider({ children }) {
     isLoading,
     setIsLoading,
     isAuthenticated,
+    createUserSession
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

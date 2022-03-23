@@ -3,14 +3,9 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
-function SimpleModal({ children, open, title, onClose }) {
+export default function AlertModal({ title, children, open, onClose }) {
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      aria-labelledby="modal-modal-title"
-      aria-describedby="modal-modal-description"
-    >
+    <Modal open={open} onClose={() => onClose()}>
       <Stack
         spacing={2}
         sx={{
@@ -27,7 +22,7 @@ function SimpleModal({ children, open, title, onClose }) {
         }}
       >
         <Box>
-          <Typography variant="h5" sx={{ margin: "auto", fontWeight: "600" }}>
+          <Typography variant="h6" sx={{ margin: "auto" }}>
             {title}
           </Typography>
         </Box>
@@ -36,5 +31,3 @@ function SimpleModal({ children, open, title, onClose }) {
     </Modal>
   );
 }
-
-export default SimpleModal;

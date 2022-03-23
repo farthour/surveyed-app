@@ -1,7 +1,7 @@
 import Head from "next/head";
 import NavBar from "../NavBar";
 
-function PageLayout({ pageTitle, children }) {
+function PageLayout({ pageTitle, showNav = true, children }) {
   return (
     <>
       <Head>
@@ -9,7 +9,8 @@ function PageLayout({ pageTitle, children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <main>
-        <NavBar />
+        {showNav && <NavBar />}
+
         {children}
       </main>
     </>

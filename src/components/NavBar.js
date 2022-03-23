@@ -1,18 +1,15 @@
-import {
-  Typography,
-  GlobalStyles,
-  CssBaseline,
-  AppBar,
-  Toolbar,
-  Button,
-} from "@mui/material";
 import Link from "next/link";
-import { useContext } from "react";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import GlobalStyles from "@mui/material/GlobalStyles";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import CssBaseline from "@mui/material/CssBaseline";
 
-import { useAuth } from "../contexts/AuthContext";
+import useAuth from "../hooks/useAuth";
 
 function NavBar() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
 
   return (
     <>
@@ -30,6 +27,19 @@ function NavBar() {
           <Typography variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
             Company name
           </Typography>
+
+          <nav>
+            {isAuthenticated && (
+              <Link
+                variant="button"
+                color="text.primary"
+                href="#"
+                sx={{ my: 1, mx: 1.5 }}
+              >
+                <a>{user.email}</a>
+              </Link>
+            )}
+          </nav>
 
           {!isAuthenticated && (
             <>

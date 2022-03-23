@@ -1,10 +1,10 @@
 import PageLayout from "../../components/layouts/PageLayout";
-import SurveySteps from "../../components/surveys/SurveySteps";
+import SurveyList from "../../components/surveys/SurveyList";
 
 function Surveys() {
   return (
     <PageLayout>
-      <SurveySteps />
+      <SurveyList />
     </PageLayout>
   );
 }

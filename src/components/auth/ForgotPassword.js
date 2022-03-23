@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
+import Alert from "@mui/material/Alert";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -8,28 +9,21 @@ import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
-import { loginFormInitialValues } from "../../utils/initialValues";
 
-// function Copyright(props) {
-//   return (
-//     <Typography
-//       variant="body2"
-//       color="text.secondary"
-//       align="center"
-//       {...props}
-//     >
-//       {"Copyright © "}
-//       <Link color="inherit" href="">
-//         Your Website
-//       </Link>{" "}
-//       {new Date().getFullYear()}
-//       {"."}
-//     </Typography>
-//   );
-// }
+import AlertModal from "../AlertModal";
+
+import { forgotPasswordFormInitialValues } from "../../utils/initialValues";
+import { forgotPasswordAPI } from "../../utils/services";
+import validate from "../../utils/validate";
+import { forgotPassword as forgotPasswordValidation } from "../../utils/validations/auth";
+import { Divider } from "@mui/material";
 
 export default function ForgotPassword() {
-  const [formData, setFormData] = useState(loginFormInitialValues);
+  const [formData, setFormData] = useState(forgotPasswordFormInitialValues);
+  const [formError, setFormError] = useState("");
+  const [isResend, setIsResend] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   const handleChange = ({ target }) =>
     setFormData({
@@ -37,10 +31,22 @@ export default function ForgotPassword() {
       [target.name]: target.value,
     });
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = async (event) => {
+    try {
+      event?.preventDefault();
+      if (isResend) return;
+      setFormError("");
 
-    console.log(formData);
+      const { error, value } = validate(forgotPasswordValidation, formData);
+
+      if (error) throw error;
+
+      await forgotPasswordAPI(value.email);
+      setShowAlert(true);
+    } catch (err) {
+      if (typeof err === "string") setFormError(err);
+      else setFormError(err?.response?.data?.err);
+    }
   };
 
   return (
@@ -57,10 +63,13 @@ export default function ForgotPassword() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Login
+          Forgot Password
         </Typography>
         <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
           <Grid container spacing={2}>
+            <Grid item xs={12}>
+              {formError && <Alert severity="error">{formError}</Alert>}
+            </Grid>
             <Grid item xs={12}>
               <TextField
                 required
@@ -92,7 +101,31 @@ export default function ForgotPassword() {
           </Grid>
         </Box>
       </Box>
-      {/* <Copyright sx={{ mt: 5 }} /> */}
+
+      {showAlert && (
+        <AlertModal
+          icon="email-large"
+          title="Reset your password"
+          open={showAlert}
+          onClose={() => setShowAlert(false)}
+        >
+          <Divider />
+          <Typography variant="body1">
+            We sent a password reset email to {formData.email}. Click the link
+            inside to get started!
+          </Typography>
+
+          <Divider />
+          <Button
+            onClick={() => {
+              handleSubmit();
+              setIsResend(true);
+            }}
+          >
+            {isResend ? "Email sent!" : "Email didn't arrive?"}
+          </Button>
+        </AlertModal>
+      )}
     </Container>
   );
 }
