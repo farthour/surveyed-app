@@ -1,8 +1,8 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
-// import apiClient from "../utils/axios";
 import { apiClient } from "../utils/axios";
+import { getInitialPageForUserRole, roleRights } from "../utils/roles";
 
 const defaultValues = {
   user: null,
@@ -15,7 +15,7 @@ const defaultValues = {
   isLoading: false,
   setIsLoading: () => null,
   isAuthenticated: false,
-  createUserSession: () => null
+  createUserSession: () => null,
 };
 
 export const AuthContext = createContext(defaultValues);
@@ -26,12 +26,82 @@ function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const isAuthenticated = !!user;
+  const [initialMount, setInitialMount] = useState(false);
 
-  // const apiClient = apiClientPrivate();
-
+  // Run after initialMount
   useEffect(() => {
-    refreshTokens();
-  }, []);
+    // debugger;
+    // If page is 404 then skip checkAccess and disply 404 page
+    if (router.pathname === "/_error") return;
+    // Run only if initialMount is true
+    if (initialMount) {
+      // Check access on user.type then refreshToken
+      checkAccess(user?.type, refreshTokens);
+    } else refreshTokens(() => setInitialMount(true));
+  }, [router.asPath, initialMount]);
+
+  // Get all allowed routes for specific user
+  // join user type routes and "OTHER" routes
+  const getAllowedRoutesForUser = (userRole) => {
+    return [...roleRights.get(userRole), ...roleRights.get("OTHER")];
+  };
+
+  // Checks user role and allow to access only allowed routes
+  const checkAccess = (userRole, cb) => {
+    // On mount
+    // Get allowed routes for user
+    let allowedRoutes = userRole && getAllowedRoutesForUser(userRole);
+
+    // If no allowedRoutes and user.type is undefined
+    // basiclly if user is not logged in
+    // then set user role as PUBLIC and rerun checkAcces
+    if (
+      (!allowedRoutes || !allowedRoutes?.length) &&
+      user?.type === undefined
+    ) {
+      checkAccess("PUBLIC", cb);
+    } else if (allowedRoutes?.includes(router.pathname)) {
+      // User is accessing allowed routes
+      // if user role is other than public
+      // run refreshToken
+      if (userRole !== "PUBLIC") cb();
+    } else {
+      // On reload of page
+      if (isAuthenticated) {
+        router.back();
+      }
+      cb();
+    }
+  };
+
+  const refreshTokens = async (cb) => {
+    try {
+      const response = await apiClient.post("/auth/refresh-tokens");
+      const { user, accessToken } = response.data;
+
+      if (user && accessToken) {
+        createUserSession(user, accessToken);
+      }
+    } catch (err) {
+      // if there is an error in refreshing tokens
+      // and user is not authenticated
+      if (!isAuthenticated) {
+        // If unauthenticated user is trying to access
+        // routes other than public
+        // then redirect to login
+        let allowedRoutes = getAllowedRoutesForUser("PUBLIC");
+        if (!allowedRoutes?.includes(router.pathname)) router.push("/login");
+      } else {
+        // if there is an error in refreshing tokens
+        // and user is authenticated
+        // go back
+        router.back();
+      }
+    } finally {
+      // No matter what, run callback (setInitialMount)
+      cb && cb();
+    }
+  };
 
   const createUserSession = (user, accessToken, redirectUrl) => {
     user && setUser(user);
@@ -40,7 +110,6 @@ function AuthProvider({ children }) {
       const bearer = `Bearer ${accessToken}`;
       apiClient.defaults.headers.Authorization = bearer;
     }
-    console.log("createUserSession = ", accessToken);
     redirectUrl && router.push(redirectUrl);
   };
 
@@ -50,35 +119,16 @@ function AuthProvider({ children }) {
     setIsLoading(false);
   };
 
-  const refreshTokens = async () => {
-    try {
-      const response = await apiClient.post("/auth/refresh-tokens");
-      const { user, accessToken } = response.data;
-
-      if (user && accessToken) {
-        createUserSession(user, accessToken);
-
-        // setAccessToken(accessToken);
-        // setUser(user);
-        // const bearer = `Bearer ${accessToken}`;
-        // apiClient.defaults.headers.Authorization = bearer;
-      }
-    } catch (err) {
-      console.error("refresh token error = ", err);
-      // router.push('/login')
-    }
-  };
-
   const register = async (payload) => {
     const response = await apiClient.post("/auth/register", payload);
     const { user, accessToken } = response.data;
 
     if (user && accessToken) {
-      createUserSession(user, accessToken, "/surveys");
-      // setAccessToken(accessToken);
-      // setUser(user);
-      // apiClient.defaults.headers.Authorization = `Bearer ${accessToken}`;
-      // router.push("/surveys");
+      createUserSession(
+        user,
+        accessToken,
+        getInitialPageForUserRole(user?.type)
+      );
     }
   };
 
@@ -87,11 +137,11 @@ function AuthProvider({ children }) {
     const { user, accessToken } = response.data;
 
     if (user && accessToken) {
-      createUserSession(user, accessToken, "/surveys");
-      // setAccessToken(accessToken);
-      // setUser(user);
-      // apiClient.defaults.headers.Authorization = `Bearer ${accessToken}`;
-      // router.push("/surveys");
+      createUserSession(
+        user,
+        accessToken,
+        getInitialPageForUserRole(user?.type)
+      );
     }
   };
 
@@ -102,13 +152,7 @@ function AuthProvider({ children }) {
         password,
       }
     );
-    // const { user, accessToken } = response.data;
-
-    // if (user && accessToken) {
-    // 	setAccessToken(accessToken);
-    // 	setUser(user);
     router.push("/login?flash=Password reset successfull. Please Login.");
-    // }
   };
 
   const logout = async () => {
@@ -128,7 +172,7 @@ function AuthProvider({ children }) {
     isLoading,
     setIsLoading,
     isAuthenticated,
-    createUserSession
+    createUserSession,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

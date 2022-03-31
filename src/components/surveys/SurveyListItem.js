@@ -15,7 +15,7 @@ function SurveyListItem({ id, className }) {
         <Typography variant="body2">some other content</Typography>
 
         <CardActions className="flex justify-end px-0">
-          <Link href="#">
+          <Link href="/#">
             <a>
               <Button size="small">Open</Button>
             </a>

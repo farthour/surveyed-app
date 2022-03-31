@@ -1,8 +1,8 @@
 export const registerFormInitialValues = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  password: "",
+  firstName: "Amit",
+  lastName: "Dimri",
+  email: "amit@yopmail.com",
+  password: "1qaz2wsx",
   acceptedTerms: false,
 };
 

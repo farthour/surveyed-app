@@ -28,7 +28,7 @@ export default function Login() {
     if (router.isReady && router.query.flash) {
       setFlashMessage(router.query.flash.toString());
     }
-  }, [router.isReady]);
+  }, [router.isReady, router.query.flash, setFlashMessage]);
 
   const handleChange = ({ target }) =>
     setFormData({
@@ -113,7 +113,7 @@ export default function Login() {
             </Grid>
             <Grid item xs={12}>
               <Link href="/forgot-password">
-                <a>Forgot Password</a>
+                Forgot Password
               </Link>
             </Grid>
           </Grid>
@@ -129,7 +129,7 @@ export default function Login() {
           <Grid container justifyContent="flex-end">
             <Grid item>
               <Link href="/register" variant="body2">
-                <a>Don't have an account? Register</a>
+                Don&apos;t have an account? Register
               </Link>
             </Grid>
           </Grid>

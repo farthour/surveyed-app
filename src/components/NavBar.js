@@ -36,26 +36,51 @@ function NavBar() {
                 href="#"
                 sx={{ my: 1, mx: 1.5 }}
               >
-                <a>{user.email}</a>
+                {user.email}
               </Link>
             )}
           </nav>
 
-          {!isAuthenticated && (
-            <>
-              <Link href="/login">
-                <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-                  <a>Login</a>
-                </Button>
-              </Link>
+          {/* {!isAuthenticated && ( */}
+          <>
+            <Link href="/login" passHref={true}>
+              <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+                Login
+              </Button>
+            </Link>
 
-              <Link href="/register">
-                <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
-                  <a>Register</a>
-                </Button>
-              </Link>
-            </>
-          )}
+            <Link href="/register" passHref={true}>
+              <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+                Register
+              </Button>
+            </Link>
+            <Link href="/surveys" passHref={true}>
+              <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+                Surveyd
+              </Button>
+            </Link>
+            <Link href="/surveys/1" passHref={true}>
+              <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+                Surveyd 1
+              </Button>
+            </Link>
+            <Link href="/admin" passHref={true}>
+              <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+                Admin
+              </Button>
+            </Link>
+            <Link href="/admin/show" passHref={true}>
+              <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+                Admin Show
+              </Button>
+            </Link>
+            <Link href="/abc" passHref={true}>
+              <Button variant="outlined" sx={{ my: 1, mx: 1.5 }}>
+                Error page
+              </Button>
+            </Link>
+          </>
+          {/* )} */}
 
           {isAuthenticated && (
             <Button

@@ -15,56 +15,28 @@ import Alert from "@mui/material/Alert";
 import SimpleModal from "../SimpleModal";
 import LoadingButton from "@mui/lab/LoadingButton";
 
-import EmailVerification from "./EmailVerification";
-
 import validate from "../../utils/validate";
 import useAuth from "../../hooks/useAuth";
-import { EMAIL_VERIFICATION_STATUS } from "../../utils/constants";
 import { registerFormInitialValues } from "../../utils/initialValues";
 import { register as registerValidation } from "../../utils/validations/auth";
-import { verifyEmail } from "../../utils/services";
-
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 export default function Register() {
   const [formData, setFormData] = useState(registerFormInitialValues);
   const [formError, setFormError] = useState("");
   const [showTnCModal, setShowTnCModal] = useState(false);
   const [successfullRegistration, setSuccessfullRegistration] = useState(false);
-  const [emailVerificationStatus, setEmailVerificationStatus] = useState();
   const [flashMessage, setFlashMessage] = useState("");
 
-  const { register, user, setUser, isLoading, setIsLoading, isAuthenticated } =
-    useAuth();
+  const { register, isLoading, setIsLoading } = useAuth();
   const router = useRouter();
+  const privateApiClient = useAxiosPrivate();
 
   useEffect(() => {
-    const confirmEmail = async () => {
-      try {
-        if (router.isReady && router.query.token) {
-          const token = router.query.token.toString();
-          const res = await verifyEmail(token);
-          isAuthenticated && setUser(res.data.user);
-          if (res.data?.user?.isEmailVerified) {
-            setEmailVerificationStatus(EMAIL_VERIFICATION_STATUS.SUCCESS);
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        setEmailVerificationStatus(EMAIL_VERIFICATION_STATUS.FAIL);
-        // router.push("/login");
-      }
-    };
-
-    if (!user || !user.isEmailVerified) {
-      confirmEmail();
-    }
-
     if (router.isReady && router.query.flash) {
       setFlashMessage(router.query.flash.toString());
     }
-  }, [router.isReady, user]);
-
-  const handleResendMail = () => {};
+  }, [router.isReady, router.query.flash, setFlashMessage]);
 
   const handleChange = ({ target }) =>
     setFormData({
@@ -92,6 +64,8 @@ export default function Register() {
     }
   };
 
+  const handleResendMail = () => {};
+
   return (
     <Container component="main" maxWidth="xs">
       <Box
@@ -109,135 +83,121 @@ export default function Register() {
             </Alert>
           )}
         </Grid>
-        {emailVerificationStatus ? (
-          <EmailVerification
-            emailVerificationStatus={emailVerificationStatus}
-          />
-        ) : (
-          <>
-            <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
-              <LockOutlinedIcon />
-            </Avatar>
-            <Typography component="h1" variant="h5">
-              Sign up
-            </Typography>
-            <Box
-              component="form"
-              noValidate
-              onSubmit={handleSubmit}
-              sx={{ mt: 3 }}
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  {formError && <Alert severity="error">{formError}</Alert>}
-                  {successfullRegistration && (
-                    <Alert severity="success">
-                      An email is sent&nbsp;&nbsp;
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={handleResendMail}
-                      >
-                        Resend Mail
-                      </Button>
-                    </Alert>
-                  )}
-                </Grid>
+        <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          Sign up
+        </Typography>
+        <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              {formError && <Alert severity="error">{formError}</Alert>}
+              {successfullRegistration && (
+                <Alert severity="success">
+                  An email is sent&nbsp;&nbsp;
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleResendMail}
+                  >
+                    Resend Mail
+                  </Button>
+                </Alert>
+              )}
+            </Grid>
 
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    autoComplete="given-name"
-                    name="firstName"
-                    required
-                    fullWidth
-                    id="firstName"
-                    label="First Name"
-                    autoFocus
-                    value={formData.firstName}
-                    onChange={handleChange}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    required
-                    fullWidth
-                    id="lastName"
-                    label="Last Name"
-                    name="lastName"
-                    autoComplete="family-name"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    required
-                    fullWidth
-                    id="email"
-                    label="Email Address"
-                    name="email"
-                    autoComplete="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    required
-                    fullWidth
-                    name="password"
-                    label="Password"
-                    type="password"
-                    id="password"
-                    autoComplete="new-password"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="acceptedTerms"
-                        value="acceptedTerms"
-                        color="primary"
-                        value={formData.acceptedTerms}
-                        onChange={handleChange}
-                      />
-                    }
-                    label={
-                      <>
-                        Accept our{" "}
-                        <Link href="#terms-conditions">
-                          <a onClick={() => setShowTnCModal(true)}>
-                            Terms and Conditions
-                          </a>
-                        </Link>
-                      </>
-                    }
-                  />
-                </Grid>
-              </Grid>
-              <LoadingButton
-                type="submit"
+            <Grid item xs={12} sm={6}>
+              <TextField
+                autoComplete="given-name"
+                name="firstName"
+                required
                 fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                loading={isLoading}
-              >
-                Sign Up
-              </LoadingButton>
+                id="firstName"
+                label="First Name"
+                autoFocus
+                value={formData.firstName}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                required
+                fullWidth
+                id="lastName"
+                label="Last Name"
+                name="lastName"
+                autoComplete="family-name"
+                value={formData.lastName}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="new-password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="acceptedTerms"
+                    color="primary"
+                    value={formData.acceptedTerms}
+                    onChange={handleChange}
+                  />
+                }
+                label={
+                  <>
+                    Accept our{" "}
+                    <Link href="/register#terms-conditions">
+                      <a onClick={() => setShowTnCModal(true)}>
+                        Terms and Conditions
+                      </a>
+                    </Link>
+                  </>
+                }
+              />
+            </Grid>
+          </Grid>
+          <LoadingButton
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+            loading={isLoading}
+          >
+            Sign Up
+          </LoadingButton>
 
-              <Grid container justifyContent="flex-end">
-                <Grid item>
-                  <Link href="/login" variant="body2">
-                    <a> Already have an account? Sign in</a>
-                  </Link>
-                </Grid>
-              </Grid>
-            </Box>
-          </>
-        )}
+          <Grid container justifyContent="flex-end">
+            <Grid item>
+              <Link href="/login" variant="body2">
+                <a> Already have an account? Sign in</a>
+              </Link>
+            </Grid>
+          </Grid>
+        </Box>
       </Box>
 
       <SimpleModal

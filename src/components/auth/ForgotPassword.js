@@ -9,21 +9,23 @@ import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
+import Divider from "@mui/material/Divider";
 
 import AlertModal from "../AlertModal";
 
 import { forgotPasswordFormInitialValues } from "../../utils/initialValues";
-import { forgotPasswordAPI } from "../../utils/services";
+import AuthService from "../../services/auth.service";
 import validate from "../../utils/validate";
 import { forgotPassword as forgotPasswordValidation } from "../../utils/validations/auth";
-import { Divider } from "@mui/material";
+import { apiClient } from "../../utils/axios";
 
 export default function ForgotPassword() {
   const [formData, setFormData] = useState(forgotPasswordFormInitialValues);
   const [formError, setFormError] = useState("");
   const [isResend, setIsResend] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+
+  const authService = new AuthService(apiClient)
 
   const handleChange = ({ target }) =>
     setFormData({
@@ -41,7 +43,7 @@ export default function ForgotPassword() {
 
       if (error) throw error;
 
-      await forgotPasswordAPI(value.email);
+      await authService.forgotPasswordAPI(value.email);
       setShowAlert(true);
     } catch (err) {
       if (typeof err === "string") setFormError(err);
