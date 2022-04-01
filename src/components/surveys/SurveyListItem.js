@@ -5,14 +5,14 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import SimpleCard from "../SimpleCard";
 
-function SurveyListItem({ id, className }) {
+function SurveyListItem({ id, title, description, className }) {
   return (
     <SimpleCard className={`relative ${className}`}>
       <CardContent>
         <Typography gutterBottom variant="h6" component="div">
-          this is a question
+          {title}
         </Typography>
-        <Typography variant="body2">some other content</Typography>
+        <Typography variant="body2">{description}</Typography>
 
         <CardActions className="flex justify-end px-0">
           <Link href="/#">

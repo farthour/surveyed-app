@@ -1,17 +1,17 @@
 import Container from "@mui/material/Container";
 import AddButtonBig from "../AddButtonBig";
 
-import AuthService from "../../services/auth.service";
+import SurveysService from "../../services/surveys.service";
 
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 function Admin() {
   const apiClient = useAxiosPrivate();
-  const authService = new AuthService(apiClient)
+  const surveysService = new SurveysService(apiClient)
 
   const handleDummyReq = async () => {
     try {
-      const response = await authService.dummy();
+      const response = await surveysService.dummy();
       console.log("dummy res=", response.data);
     } catch (err) {
       console.error("dummy err =", err);

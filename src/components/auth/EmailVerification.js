@@ -13,7 +13,7 @@ export default function EmailVerification() {
   const [emailVerificationStatus, setEmailVerificationStatus] = useState("");
 
   const router = useRouter();
-  const { user, setUser, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const privateApiClient = useAxiosPrivate();
   const authService = new AuthService(privateApiClient)
 

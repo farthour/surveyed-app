@@ -1,18 +1,29 @@
 import Container from "@mui/material/Container";
+import Alert from "@mui/material/Alert";
+import { useQueryClient, useQuery } from "react-query";
+
 import AddButtonBig from "../AddButtonBig";
 import SurveyListItem from "./SurveyListItem";
+import FullPageLoader from "../FullPageLoader";
 
-import AuthService from "../../services/auth.service";
-
+import SurveysService from "../../services/surveys.service";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 function SurveyList() {
   const apiClient = useAxiosPrivate();
-  const authService = new AuthService(apiClient)
+  const surveysService = new SurveysService(apiClient);
+
+  // Access the client
+  const queryClient = useQueryClient();
+  // Queries
+  const { isLoading, isError, isSuccess, data, error } = useQuery(
+    "getSurveys",
+    () => surveysService.getUserSurveys()
+  );
 
   const handleDummyReq = async () => {
     try {
-      const response = await authService.dummy();
+      const response = await surveysService.getUserSurveys();
 
       console.log("dummy res=", response.data);
     } catch (err) {
@@ -20,12 +31,29 @@ function SurveyList() {
     }
   };
 
+  const createComponent = () => {
+    if (isError) return <Alert severity="error">{error.message}</Alert>;
+    if (isSuccess)
+      return (
+        <>
+          {data.data.surveys.map((v) => (
+            <SurveyListItem
+              key={v.id}
+              className="w-80 h-32"
+              title={v.title}
+              description={v.description}
+            />
+          ))}
+        </>
+      );
+  };
+
+  if (isLoading) return <FullPageLoader />
+
   return (
     <Container className="flex flex-wrap justify-initial">
       <AddButtonBig className="h-32" onClick={handleDummyReq} />
-      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((v, i) => (
-        <SurveyListItem key={i} className="w-80 h-32" />
-      ))}
+      {createComponent()}
     </Container>
   );
 }
