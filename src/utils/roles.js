@@ -1,6 +1,6 @@
 const ROLES = {
   ADMIN: ["/admin", "/admin/show"],
-  MEMBER: ["/surveys", "/surveys/[id]"],
+  MEMBER: ["/surveys", "/surveys/[id]", "/surveys/new"],
   PUBLIC: ["/login", "/register", "/forgot-password", "/reset-password"],
   OTHER: ["/verify-email", "/"],
 };

@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from "next/link";
 import Button from "@mui/material/Button";
 import CardActions from "@mui/material/CardActions";
@@ -6,6 +7,8 @@ import Typography from "@mui/material/Typography";
 import SimpleCard from "../SimpleCard";
 
 function SurveyListItem({ id, title, description, className }) {
+  console.log("Rendering SurveyListItem");
+
   return (
     <SimpleCard className={`relative ${className}`}>
       <CardContent>
@@ -15,7 +18,7 @@ function SurveyListItem({ id, title, description, className }) {
         <Typography variant="body2">{description}</Typography>
 
         <CardActions className="flex justify-end px-0">
-          <Link href="/#">
+          <Link href={`/surveys/${id}`}>
             <a>
               <Button size="small">Open</Button>
             </a>
@@ -26,4 +29,4 @@ function SurveyListItem({ id, title, description, className }) {
   );
 }
 
-export default SurveyListItem;
+export default React.memo(SurveyListItem);

@@ -21,16 +21,6 @@ function SurveyList() {
     () => surveysService.getUserSurveys()
   );
 
-  const handleDummyReq = async () => {
-    try {
-      const response = await surveysService.getUserSurveys();
-
-      console.log("dummy res=", response.data);
-    } catch (err) {
-      console.error("dummy err =", err);
-    }
-  };
-
   const createComponent = () => {
     if (isError) return <Alert severity="error">{error.message}</Alert>;
     if (isSuccess)
@@ -39,20 +29,24 @@ function SurveyList() {
           {data.data.surveys.map((v) => (
             <SurveyListItem
               key={v.id}
-              className="w-80 h-32"
+              id={v.id}
               title={v.title}
               description={v.description}
+              className="w-80 h-32"
             />
           ))}
         </>
       );
   };
 
-  if (isLoading) return <FullPageLoader />
+  if (isLoading) return <FullPageLoader />;
 
   return (
     <Container className="flex flex-wrap justify-initial">
-      <AddButtonBig className="h-32" onClick={handleDummyReq} />
+      <AddButtonBig
+        className="h-32"
+        href="/surveys/new"
+      />
       {createComponent()}
     </Container>
   );

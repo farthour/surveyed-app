@@ -20,7 +20,7 @@ function Admin() {
 
   return (
     <Container className="flex flex-wrap justify-initial">
-      <AddButtonBig className="h-32" onClick={handleDummyReq} />
+      <AddButtonBig className="h-32" href={"/#"} onClick={handleDummyReq} />
     </Container>
   );
 }
